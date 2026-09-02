@@ -1,0 +1,40 @@
+@if (positionedNodes.length) {
+<div class="graph-wrapper" aria-label="Visualización del grafo familiar">
+  <svg viewBox="0 0 640 440" role="group" aria-labelledby="graphTitle">
+    <title id="graphTitle">Grafo de relaciones familiares</title>
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6"
+        orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+      </marker>
+    </defs>
+
+    <g class="edges" [attr.transform]="viewTransform">
+      @for (edge of edges; track edge.id) {
+      @if (positionMap[edge.sourceId] && positionMap[edge.targetId]) {
+      <line class="edge" [attr.x1]="positionMap[edge.sourceId].x" [attr.y1]="positionMap[edge.sourceId].y"
+        [attr.x2]="positionMap[edge.targetId].x" [attr.y2]="positionMap[edge.targetId].y" [attr.stroke]="colorFor(edge)"
+        marker-end="url(#arrow)"></line>
+      }
+      }
+    </g>
+
+    <g class="nodes" [attr.transform]="viewTransform">
+      @for (positioned of positionedNodes; track positioned.node.id) {
+      <g class="node" tabindex="0" role="button" [attr.aria-label]="'Ver detalles de ' + positioned.node.displayName"
+        [attr.aria-pressed]="isSelected(positioned.node.id)" [class.selected]="isSelected(positioned.node.id)"
+        (click)="onNodeActivate(positioned.node)" (keydown.enter)="onNodeActivate(positioned.node)"
+        (keydown.space)="onNodeActivate(positioned.node); $event.preventDefault()">
+        <circle [attr.cx]="positioned.x" [attr.cy]="positioned.y" r="26"></circle>
+        <text [attr.x]="positioned.x" [attr.y]="positioned.y">{{ positioned.node.displayName }}</text>
+      </g>
+      }
+    </g>
+  </svg>
+</div>
+} @else {
+<div class="empty-state">
+  <p>No hay nodos suficientes para dibujar el grafo.</p>
+  <span>Agrega miembros y relaciones para verlos aquí.</span>
+</div>
+}

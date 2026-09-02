@@ -1,0 +1,79 @@
+<form class="member-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <section class="panel">
+    <h2>Identidad</h2>
+    <div class="field-grid">
+      <label class="field">
+        <span>Identificador *</span>
+        <input type="text" formControlName="id" placeholder="p-2025-001" autocomplete="off" required
+          [attr.aria-invalid]="(controls.id.touched && controls.id.invalid) ? true : null"
+          [attr.aria-describedby]="(controls.id.touched && controls.id.invalid) ? 'id-error' : null" />
+        @if (controls.id.touched && controls.id.invalid) {
+        <small class="error" id="id-error" role="alert">
+          @if (controls.id.errors?.['duplicateId']) {
+          Este identificador ya está en uso, elige otro.
+          } @else {
+          Usa al menos 3 caracteres únicos.
+          }
+        </small>
+        }
+      </label>
+      <label class="field">
+        <span>Nombre completo *</span>
+        <input type="text" formControlName="displayName" placeholder="Ej. Ana Martínez" required
+          [attr.aria-invalid]="(controls.displayName.touched && controls.displayName.invalid) ? true : null"
+          [attr.aria-describedby]="(controls.displayName.touched && controls.displayName.invalid) ? 'displayName-error' : null" />
+        @if (controls.displayName.touched && controls.displayName.invalid) {
+        <small class="error" id="displayName-error" role="alert">
+          Este campo es obligatorio.
+        </small>
+        }
+      </label>
+      <label class="field">
+        <span>Lugar de nacimiento</span>
+        <input type="text" formControlName="birthplace" placeholder="Ciudad, País" />
+      </label>
+      <label class="field">
+        <span>Fotografía (URL)</span>
+        <input type="url" formControlName="photoUrl" placeholder="https://..."
+          [attr.aria-invalid]="(controls.photoUrl.touched && controls.photoUrl.invalid) ? true : null"
+          [attr.aria-describedby]="(controls.photoUrl.touched && controls.photoUrl.invalid) ? 'photoUrl-error' : null" />
+        @if (controls.photoUrl.touched && controls.photoUrl.invalid) {
+        <small class="error" id="photoUrl-error" role="alert">
+          Introduce una URL válida que comience con http o https.
+        </small>
+        }
+      </label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Linea de tiempo</h2>
+    <div class="field-grid">
+      <label class="field">
+        <span>Fecha de nacimiento</span>
+        <input type="date" formControlName="birthDate" />
+      </label>
+      <label class="field">
+        <span>Fecha de defunción</span>
+        <input type="date" formControlName="deathDate" />
+      </label>
+      <label class="field field--full">
+        <span>Resumen biográfico</span>
+        <textarea rows="4" formControlName="biography" placeholder="Notas relevantes, hitos, profesión..."></textarea>
+      </label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Etiquetas internas</h2>
+    <label class="field field--full">
+      <span>Tags (separados por coma)</span>
+      <input type="text" formControlName="tags" placeholder="madre, generación 3, rama paterna" />
+    </label>
+  </section>
+
+  <div class="actions">
+    <button type="button" class="ghost" (click)="resetForm()">Limpiar</button>
+    <button type="submit" class="primary">{{ submitLabel }}</button>
+  </div>
+</form>

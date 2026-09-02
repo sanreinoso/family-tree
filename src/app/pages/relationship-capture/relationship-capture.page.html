@@ -1,0 +1,47 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">Captura</p>
+    <h1>Relacionar miembros</h1>
+    <p>Selecciona el origen, destino y el tipo de relación que los une.</p>
+  </div>
+  <div class="metrics">
+    <div>
+      <small>Miembros</small>
+      <strong>{{ stats().nodes }}</strong>
+    </div>
+    <div>
+      <small>Relaciones</small>
+      <strong>{{ stats().edges }}</strong>
+    </div>
+  </div>
+</section>
+
+@if (status() === 'saved') {
+<div class="status-pill" role="status" aria-live="polite">
+  Relación guardada en memoria local
+</div>
+}
+
+@if (status() === 'duplicate') {
+<div class="status-pill status-pill--warning" role="status" aria-live="polite">
+  Esta relación ya existía; no se guardó ningún duplicado.
+</div>
+}
+
+@if (!canLink()) {
+<section class="alert">
+  <p>Necesitas al menos dos miembros registrados para crear relaciones.</p>
+  <a routerLink="/members/new">Añadir miembros</a>
+</section>
+}
+
+@if (canLink()) {
+<app-relationship-form [nodes]="nodes()" (relationshipSubmit)="handleSubmit($event)"></app-relationship-form>
+}
+
+@if (lastSaved(); as saved) {
+<section class="preview">
+  <h2>Último enlace</h2>
+  <pre>{{ saved | json }}</pre>
+</section>
+}

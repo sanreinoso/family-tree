@@ -1,0 +1,65 @@
+.graph-wrapper {
+  width: 100%;
+  background: radial-gradient(circle at top, rgba(191, 219, 254, 0.5), rgba(248, 250, 252, 0.9));
+  border-radius: 1.5rem;
+  padding: 1rem;
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+svg {
+  width: 100%;
+  height: clamp(280px, 60vh, 460px);
+  border-radius: 1rem;
+}
+
+.edges .edge {
+  stroke-width: 2;
+  opacity: 0.8;
+}
+
+.nodes .node circle {
+  fill: #fff;
+  stroke: #0f172a;
+  stroke-width: 2;
+  filter: drop-shadow(0 8px 18px rgba(15, 23, 42, 0.15));
+  transition: transform 120ms ease, stroke 120ms ease, fill 120ms ease;
+}
+
+.nodes .node {
+  cursor: pointer;
+  outline: none;
+}
+
+.nodes .node:focus-visible circle,
+.nodes .node:hover circle {
+  stroke: #2563eb;
+  fill: #eff6ff;
+  transform: translateY(-2px) scale(1.02);
+}
+
+.nodes .node.selected circle {
+  stroke: #7c3aed;
+  fill: #f5f3ff;
+}
+
+.nodes text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: #0f172a;
+  pointer-events: none;
+  user-select: none;
+}
+
+.empty-state {
+  padding: 2rem;
+  border-radius: 1.25rem;
+  border: 1px dashed #cbd5f5;
+  background: #f8fafc;
+  text-align: center;
+  color: #475467;
+}

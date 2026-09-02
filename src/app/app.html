@@ -1,0 +1,28 @@
+<header class="app-header">
+  <div class="brand">
+    <div class="brand__glyph" aria-hidden="true">FT</div>
+    <div class="brand__copy">
+      <p class="eyebrow">Workspace</p>
+      <h1>{{ brand().name }}</h1>
+      <p class="lede">{{ brand().summary }}</p>
+    </div>
+  </div>
+  <nav class="app-nav" aria-label="Primary">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+    <a routerLink="/members/new" routerLinkActive="active">Miembros</a>
+    <a routerLink="/relationships/new" routerLinkActive="active">Relaciones</a>
+    <a routerLink="/graph" routerLinkActive="active">Grafo</a>
+  </nav>
+  <button type="button" class="primary" routerLink="/members/new">
+    Registrar miembro
+  </button>
+</header>
+
+<main class="app-main" id="main-content">
+  <router-outlet />
+</main>
+
+<footer class="app-footer">
+  <span>&copy; {{ currentYear }} Family Tree</span>
+  <span>Keep stories alive.</span>
+</footer>

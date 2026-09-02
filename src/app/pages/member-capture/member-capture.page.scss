@@ -1,0 +1,70 @@
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-heading .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.75rem;
+  color: var(--accent, #2563eb);
+  margin: 0 0 0.35rem 0;
+}
+
+.page-heading h1 {
+  margin: 0 0 0.25rem 0;
+}
+
+.metrics {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  background: #ffffff;
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.metrics div {
+  min-width: 90px;
+}
+
+.metrics small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted, #475467);
+}
+
+.metrics strong {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.status-pill {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  background: var(--accent-soft, rgba(37, 99, 235, 0.15));
+  color: var(--accent, #2563eb);
+  font-weight: 600;
+}
+
+.preview {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 0.85rem;
+  overflow: auto;
+}
+
+.preview pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

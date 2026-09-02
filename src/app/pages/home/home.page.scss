@@ -1,0 +1,73 @@
+.hero {
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  background: radial-gradient(circle at top left, #dbeafe, #eef2ff 45%, #ffffff 100%);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
+}
+
+.hero .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.75rem;
+  color: var(--accent, #2563eb);
+  margin: 0 0 0.5rem 0;
+}
+
+.hero h1 {
+  margin: 0 0 1rem 0;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1.2;
+}
+
+.hero .lede {
+  color: var(--text-muted, #475467);
+  max-width: 580px;
+}
+
+.cta-group {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cta {
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.85rem 1.5rem;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease;
+}
+
+.cta.primary {
+  background: linear-gradient(120deg, #2563eb, #7c3aed);
+  color: #fff;
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.25);
+}
+
+.cta.ghost {
+  border-color: rgba(15, 23, 42, 0.15);
+  color: #0f172a;
+  background: #fff;
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.grid article {
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 15px 45px rgba(15, 23, 42, 0.05);
+}

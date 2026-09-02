@@ -1,0 +1,67 @@
+<form class="relationship-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <section class="panel">
+    <h2>Selecciona los nodos</h2>
+    <div class="field-grid">
+      <label class="field">
+        <span>Persona origen *</span>
+        <select formControlName="sourceId" required
+          [attr.aria-invalid]="(controls.sourceId.touched && controls.sourceId.invalid) ? true : null"
+          [attr.aria-describedby]="(controls.sourceId.touched && controls.sourceId.invalid) ? 'sourceId-error' : null">
+          <option value="" disabled>Elige un miembro</option>
+          @for (node of nodes; track node.id) {
+          <option [value]="node.id">{{ node.displayName }}</option>
+          }
+        </select>
+        @if (controls.sourceId.touched && controls.sourceId.invalid) {
+        <small class="error" id="sourceId-error" role="alert">
+          Selecciona la persona origen.
+        </small>
+        }
+      </label>
+      <label class="field">
+        <span>Persona destino *</span>
+        <select formControlName="targetId" required
+          [attr.aria-invalid]="(controls.targetId.touched && controls.targetId.invalid) ? true : null"
+          [attr.aria-describedby]="(controls.targetId.touched && controls.targetId.invalid) ? 'targetId-error' : null">
+          <option value="" disabled>Elige un miembro</option>
+          @for (node of nodes; track node.id) {
+          <option [value]="node.id">{{ node.displayName }}</option>
+          }
+        </select>
+        @if (controls.targetId.touched && controls.targetId.invalid) {
+        <small class="error" id="targetId-error" role="alert">
+          Selecciona la persona destino.
+        </small>
+        }
+      </label>
+    </div>
+    @if (hasSameNodeError()) {
+    <small class="error" role="alert">
+      No puedes relacionar un miembro consigo mismo.
+    </small>
+    }
+  </section>
+
+  <section class="panel">
+    <h2>Tipo de relación</h2>
+    <div class="field-grid">
+      <label class="field">
+        <span>Clase *</span>
+        <select formControlName="kind">
+          @for (kind of relationshipKinds; track kind) {
+          <option [value]="kind">{{ kind }}</option>
+          }
+        </select>
+      </label>
+      <label class="field field--full">
+        <span>Notas</span>
+        <textarea rows="3" formControlName="notes" placeholder="Contexto, fuentes o aclaraciones"></textarea>
+      </label>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button type="button" class="ghost" (click)="resetForm()">Limpiar</button>
+    <button type="submit" class="primary">{{ submitLabel }}</button>
+  </div>
+</form>

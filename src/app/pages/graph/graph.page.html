@@ -1,0 +1,99 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">Explorador</p>
+    <h1>Visualización del grafo familiar</h1>
+    <p>
+      Revisa cómo se distribuyen los nodos y las aristas actuales. Conforme captures más información el grafo se
+      irá
+      reorganizando automáticamente.
+    </p>
+  </div>
+  <div class="stats">
+    <div>
+      <small>Nodos</small>
+      <strong>{{ stats().nodeCount }}</strong>
+    </div>
+    <div>
+      <small>Relaciones</small>
+      <strong>{{ stats().edgeCount }}</strong>
+    </div>
+    <div>
+      <small>Actualizado</small>
+      <strong>{{ stats().updatedAt | date: 'short' }}</strong>
+    </div>
+  </div>
+</section>
+
+<section class="graph-actions" aria-label="Controles del grafo">
+  <div class="zoom" role="group" aria-label="Zoom del grafo">
+    <button type="button" (click)="zoomOut()" [disabled]="zoom() <= 0.6" aria-label="Alejar">-</button>
+    <input type="range" min="0.6" max="1.8" step="0.05" [value]="zoom()"
+      (input)="onZoomSliderChange(($any($event.target)).value)" aria-label="Ajustar zoom" />
+    <button type="button" (click)="zoomIn()" [disabled]="zoom() >= 1.8" aria-label="Acercar">+</button>
+    <button type="button" class="ghost" (click)="resetZoom()">Restablecer</button>
+    <span class="zoom-readout" aria-live="polite">{{ (zoom() * 100) | number: '1.0-0' }}%</span>
+  </div>
+
+  <div class="hint" aria-live="polite">
+    Selecciona un nodo con clic o teclado (Enter/Espacio) para ver detalles.
+  </div>
+</section>
+
+<app-graph-viewport [nodes]="snapshot().nodes" [edges]="snapshot().edges" [zoom]="zoom()"
+  [selectedNodeId]="selectedNodeId()" (nodeSelect)="handleNodeSelect($event)"></app-graph-viewport>
+
+<section class="detail-panel" aria-live="polite">
+  @if (selectedNode(); as node) {
+  <div class="detail-header">
+    <div>
+      <p class="eyebrow">Detalle de miembro</p>
+      <h2>{{ node.displayName }}</h2>
+      <p class="muted">ID: {{ node.id }}</p>
+    </div>
+    <button type="button" class="ghost" (click)="clearSelection()">Cerrar</button>
+  </div>
+
+  <dl class="detail-grid">
+    <div>
+      <dt>Nacimiento</dt>
+      <dd>{{ node.birthDate || 'Sin especificar' }}</dd>
+    </div>
+    <div>
+      <dt>Lugar</dt>
+      <dd>{{ node.birthplace || 'Sin especificar' }}</dd>
+    </div>
+    <div>
+      <dt>Notas</dt>
+      <dd>{{ node.biography || 'Sin notas aún' }}</dd>
+    </div>
+    <div>
+      <dt>Etiquetas</dt>
+      <dd>
+        @if (node.tags?.length) {
+        @for (tag of node.tags; track tag) {
+        <span class="tag">{{ tag }}</span>
+        }
+        } @else {
+        <span class="muted">Sin etiquetas</span>
+        }
+      </dd>
+    </div>
+  </dl>
+  } @else {
+  <div class="detail-empty">
+    <p>Selecciona un nodo para ver sus detalles.</p>
+    <span class="muted">Sugerencia: usa zoom para acercarte a nodos densos.</span>
+  </div>
+  }
+</section>
+
+<section class="legend">
+  <h2>Leyenda rápida</h2>
+  <ul>
+    <li><span class="dot parent"></span>Padre / Madre</li>
+    <li><span class="dot child"></span>Hijo / Hija</li>
+    <li><span class="dot spouse"></span>Pareja</li>
+    <li><span class="dot sibling"></span>Hermano / Hermana</li>
+    <li><span class="dot grand"></span>Abuelos / Nietos</li>
+  </ul>
+</section>

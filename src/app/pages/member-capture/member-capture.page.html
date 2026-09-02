@@ -1,0 +1,32 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">Captura</p>
+    <h1>Nuevo miembro</h1>
+    <p>Completa la información disponible. Puedes volver a editarla cuando tengas más detalles.</p>
+  </div>
+  <div class="metrics">
+    <div>
+      <small>Miembros</small>
+      <strong>{{ stats().nodes }}</strong>
+    </div>
+    <div>
+      <small>Relaciones</small>
+      <strong>{{ stats().edges }}</strong>
+    </div>
+  </div>
+</section>
+
+@if (status() === 'saved') {
+<div class="status-pill" role="status" aria-live="polite">
+  Último registro guardado en memoria local
+</div>
+}
+
+<app-member-form [existingIds]="existingIds()" (memberSubmit)="handleSubmit($event)"></app-member-form>
+
+@if (lastSaved(); as saved) {
+<section class="preview">
+  <h2>Último envío</h2>
+  <pre>{{ saved | json }}</pre>
+</section>
+}

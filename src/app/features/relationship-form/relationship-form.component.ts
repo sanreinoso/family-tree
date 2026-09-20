@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { PersonNode, RelationshipEdge, RelationshipKind } from '../../models/family-graph.model';
 
@@ -12,13 +19,6 @@ const differentNodesValidator: ValidatorFn = (group) => {
   return null;
 };
 
-type RelationshipFormValue = {
-  sourceId: string;
-  targetId: string;
-  kind: RelationshipKind;
-  notes: string;
-};
-
 @Component({
   selector: 'app-relationship-form',
   standalone: true,
@@ -27,12 +27,12 @@ type RelationshipFormValue = {
   styleUrl: './relationship-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RelationshipFormComponent implements OnChanges {
+export class RelationshipFormComponent {
   private readonly fb = inject(FormBuilder);
 
-  @Input() nodes: PersonNode[] = [];
-  @Input() submitLabel = 'Registrar relación';
-  @Output() relationshipSubmit = new EventEmitter<RelationshipEdge>();
+  readonly nodes = input<PersonNode[]>([]);
+  readonly submitLabel = input<string>('Registrar relación');
+  readonly relationshipSubmit = output<RelationshipEdge>();
 
   protected readonly relationshipKinds = Object.values(RelationshipKind);
 
@@ -46,10 +46,13 @@ export class RelationshipFormComponent implements OnChanges {
     { validators: differentNodesValidator }
   );
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['nodes'] && this.nodes.length) {
-      this.ensureValidSelections();
-    }
+  constructor() {
+    effect(() => {
+      const currentNodes = this.nodes();
+      if (currentNodes.length >= 2) {
+        this.ensureValidSelections(currentNodes);
+      }
+    });
   }
 
   protected get controls() {
@@ -62,13 +65,13 @@ export class RelationshipFormComponent implements OnChanges {
       return;
     }
 
-    const raw = this.form.getRawValue() as RelationshipFormValue;
+    const raw = this.form.getRawValue();
     const edge: RelationshipEdge = {
-      id: this.generateEdgeId(),
+      id: '',
       sourceId: raw.sourceId,
       targetId: raw.targetId,
       kind: raw.kind,
-      notes: this.cleanOptional(raw.notes)
+      notes: raw.notes.trim() ? raw.notes.trim() : undefined
     };
 
     this.relationshipSubmit.emit(edge);
@@ -81,40 +84,28 @@ export class RelationshipFormComponent implements OnChanges {
       kind: RelationshipKind.Parent,
       notes: ''
     });
+    this.ensureValidSelections(this.nodes());
+  }
+
+  private ensureValidSelections(nodeList: PersonNode[]): void {
+    const ids = nodeList.map((n) => n.id);
+    const { sourceId, targetId } = this.form.getRawValue();
+
+    if (!ids.includes(sourceId)) {
+      this.controls.sourceId.setValue(ids[0] ?? '');
+    }
+
+    if (!ids.includes(targetId)) {
+      const fallbackTarget = ids.find((id) => id !== this.controls.sourceId.value) ?? ids[1] ?? '';
+      this.controls.targetId.setValue(fallbackTarget);
+    }
   }
 
   protected nodeLabel(id: string): string {
-    return this.nodes.find((node) => node.id === id)?.displayName ?? id;
+    return this.nodes().find((node) => node.id === id)?.displayName ?? id;
   }
 
   protected hasSameNodeError(): boolean {
     return this.form.errors?.['sameNode'] ?? false;
-  }
-
-  private ensureValidSelections(): void {
-    const validIds = new Set(this.nodes.map((node) => node.id));
-    const current = this.form.value;
-
-    if (current.sourceId && !validIds.has(current.sourceId)) {
-      this.form.patchValue({ sourceId: '' });
-    }
-
-    if (current.targetId && !validIds.has(current.targetId)) {
-      this.form.patchValue({ targetId: '' });
-    }
-  }
-
-  private generateEdgeId(): string {
-    const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined;
-    if (cryptoApi?.randomUUID) {
-      return cryptoApi.randomUUID();
-    }
-
-    return `edge-${Date.now()}`;
-  }
-
-  private cleanOptional(value?: string | null): string | undefined {
-    const trimmed = value?.trim();
-    return trimmed ? trimmed : undefined;
   }
 }

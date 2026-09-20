@@ -1,40 +1,54 @@
-@if (positionedNodes.length) {
-<div class="graph-wrapper" aria-label="Visualización del grafo familiar">
-  <svg viewBox="0 0 640 440" role="group" aria-labelledby="graphTitle">
-    <title id="graphTitle">Grafo de relaciones familiares</title>
-    <defs>
-      <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6"
-        orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
-      </marker>
-    </defs>
+<div class="viewport-host" #viewportContainer>
+  @if (nodes().length > 0) {
+  <vflow #flow [nodes]="vflowNodes()" [edges]="vflowEdges()" [view]="'auto'" [minZoom]="0.4" [maxZoom]="2.5"
+    background="#fdfbf7" (nodesChanges)="onNodesChange($event)" (connect)="onConnect($event)">
+    <ng-template nodeHtml let-ctx>
+      @let person = ctx.node.data!();
+      <div class="person-card" [class.selected]="selectedNodeId() === ctx.node.id" (click)="onNodeClick(person, $event)"
+        tabindex="0" role="button" [attr.aria-label]="'Detalles de ' + person.displayName">
+        <!-- Semantic Connection Handles -->
+        <!-- Top: Ancestors / Parents -->
+        <handle type="target" position="top" id="ancestor-target" class="semantic-handle handle-ancestor"
+          title="Conectar ancestro / progenitor (Entrada)" />
 
-    <g class="edges" [attr.transform]="viewTransform">
-      @for (edge of edges; track edge.id) {
-      @if (positionMap[edge.sourceId] && positionMap[edge.targetId]) {
-      <line class="edge" [attr.x1]="positionMap[edge.sourceId].x" [attr.y1]="positionMap[edge.sourceId].y"
-        [attr.x2]="positionMap[edge.targetId].x" [attr.y2]="positionMap[edge.targetId].y" [attr.stroke]="colorFor(edge)"
-        marker-end="url(#arrow)"></line>
-      }
-      }
-    </g>
+        <!-- Bottom: Descendants / Children -->
+        <handle type="source" position="bottom" id="descendant-source" class="semantic-handle handle-descendant"
+          title="Conectar descendiente / hijo (Salida)" />
 
-    <g class="nodes" [attr.transform]="viewTransform">
-      @for (positioned of positionedNodes; track positioned.node.id) {
-      <g class="node" tabindex="0" role="button" [attr.aria-label]="'Ver detalles de ' + positioned.node.displayName"
-        [attr.aria-pressed]="isSelected(positioned.node.id)" [class.selected]="isSelected(positioned.node.id)"
-        (click)="onNodeActivate(positioned.node)" (keydown.enter)="onNodeActivate(positioned.node)"
-        (keydown.space)="onNodeActivate(positioned.node); $event.preventDefault()">
-        <circle [attr.cx]="positioned.x" [attr.cy]="positioned.y" r="26"></circle>
-        <text [attr.x]="positioned.x" [attr.y]="positioned.y">{{ positioned.node.displayName }}</text>
-      </g>
-      }
-    </g>
-  </svg>
+        <!-- Left: Spouse / Partner -->
+        <handle type="target" position="left" id="partner-left" class="semantic-handle handle-partner"
+          title="Vínculo conyugal (Izquierda)" />
+
+        <!-- Right: Spouse / Partner -->
+        <handle type="source" position="right" id="partner-right" class="semantic-handle handle-partner"
+          title="Vínculo conyugal (Derecha)" />
+
+        <div class="card-inner">
+          <div class="avatar" [class.ancestor-avatar]="person.role === 'Matriarca' || person.role === 'Patriarca'">
+            {{ getInitials(person.displayName) }}
+          </div>
+          <div class="info">
+            <span class="role-badge">{{ person.role || 'Familiar' }}</span>
+            <h4 class="name">{{ person.displayName }}</h4>
+            <p class="dates">{{ formatDates(person) }}</p>
+          </div>
+          <button type="button" class="quick-add-btn" title="Añadir pariente directo"
+            (click)="onAddRelativeClick(person, $event)" aria-label="Añadir familiar directo">
+            +
+          </button>
+        </div>
+      </div>
+    </ng-template>
+
+    @if (showMinimap()) {
+    <mini-map position="bottom-right" maskColor="rgba(247, 244, 238, 0.7)" strokeColor="#c86d51" />
+    }
+  </vflow>
+  } @else {
+  <div class="empty-state">
+    <div class="empty-icon">🌱</div>
+    <h3>Tu árbol genealógico está esperando</h3>
+    <p>Comienza capturando a tus primeros familiares para ver el linaje desplegarse.</p>
+  </div>
+  }
 </div>
-} @else {
-<div class="empty-state">
-  <p>No hay nodos suficientes para dibujar el grafo.</p>
-  <span>Agrega miembros y relaciones para verlos aquí.</span>
-</div>
-}

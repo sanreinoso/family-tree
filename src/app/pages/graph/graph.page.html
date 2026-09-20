@@ -1,99 +1,215 @@
 <section class="page-heading">
-  <div>
-    <p class="eyebrow">Explorador</p>
-    <h1>Visualización del grafo familiar</h1>
-    <p>
-      Revisa cómo se distribuyen los nodos y las aristas actuales. Conforme captures más información el grafo se
-      irá
-      reorganizando automáticamente.
+  <div class="heading-copy">
+    <p class="eyebrow">Explorador Genealógico</p>
+    <h1>Lienzo de tu Árbol Familiar</h1>
+    <p class="lede">
+      Organiza tus generaciones con libertad total. Arrastra los nodos, conecta progenitores e hijos desde los
+      conectores y conserva cada historia viva.
     </p>
   </div>
-  <div class="stats">
-    <div>
-      <small>Nodos</small>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <small>Miembros</small>
       <strong>{{ stats().nodeCount }}</strong>
     </div>
-    <div>
+    <div class="stat-card">
       <small>Relaciones</small>
       <strong>{{ stats().edgeCount }}</strong>
     </div>
-    <div>
+    <div class="stat-card">
       <small>Actualizado</small>
-      <strong>{{ stats().updatedAt | date: 'short' }}</strong>
+      <strong>{{ stats().updatedAt | date: 'shortTime' }}</strong>
     </div>
   </div>
 </section>
 
-<section class="graph-actions" aria-label="Controles del grafo">
-  <div class="zoom" role="group" aria-label="Zoom del grafo">
-    <button type="button" (click)="zoomOut()" [disabled]="zoom() <= 0.6" aria-label="Alejar">-</button>
-    <input type="range" min="0.6" max="1.8" step="0.05" [value]="zoom()"
-      (input)="onZoomSliderChange(($any($event.target)).value)" aria-label="Ajustar zoom" />
-    <button type="button" (click)="zoomIn()" [disabled]="zoom() >= 1.8" aria-label="Acercar">+</button>
-    <button type="button" class="ghost" (click)="resetZoom()">Restablecer</button>
-    <span class="zoom-readout" aria-live="polite">{{ (zoom() * 100) | number: '1.0-0' }}%</span>
+<!-- Floating Canvas Toolbar -->
+<section class="canvas-toolbar" aria-label="Controles del lienzo">
+  <div class="toolbar-group">
+    <button type="button" class="tool-btn" (click)="zoomOut()" title="Alejar (-)" aria-label="Alejar">
+      <span aria-hidden="true">−</span>
+    </button>
+    <button type="button" class="tool-btn" (click)="zoomIn()" title="Acercar (+)" aria-label="Acercar">
+      <span aria-hidden="true">+</span>
+    </button>
+    <button type="button" class="tool-btn text-btn" (click)="fitView()" title="Centrar y ajustar vista">
+      Centrar
+    </button>
+    <button type="button" class="tool-btn text-btn" [class.active]="showMinimap()" (click)="toggleMinimap()"
+      title="Alternar minimapa">
+      Minimapa
+    </button>
   </div>
 
-  <div class="hint" aria-live="polite">
-    Selecciona un nodo con clic o teclado (Enter/Espacio) para ver detalles.
+  <div class="toolbar-group actions-group">
+    <button type="button" class="primary-btn" (click)="openNewMemberDrawer()">
+      + Añadir Miembro
+    </button>
+    <button type="button" class="secondary-btn" [disabled]="isExporting()" (click)="exportAsPng()">
+      @if (isExporting()) {
+      Exportando...
+      } @else {
+      Exportar PNG
+      }
+    </button>
+    <button type="button" class="ghost-btn" (click)="downloadJsonSnapshot()" title="Descargar respaldo JSON">
+      Guardar JSON
+    </button>
+    <label class="ghost-btn file-upload-label" title="Restaurar desde archivo JSON">
+      Cargar JSON
+      <input type="file" accept=".json" (change)="onJsonFileSelected($event)" style="display: none" />
+    </label>
+    <button type="button" class="ghost-btn muted-btn" (click)="resetDemo()" title="Restablecer datos de muestra">
+      Restablecer
+    </button>
   </div>
 </section>
 
-<app-graph-viewport [nodes]="snapshot().nodes" [edges]="snapshot().edges" [zoom]="zoom()"
-  [selectedNodeId]="selectedNodeId()" (nodeSelect)="handleNodeSelect($event)"></app-graph-viewport>
+@if (exportSuccess()) {
+<div class="toast-notice" role="status" aria-live="polite">
+  ✓ {{ exportSuccess() }}
+</div>
+}
 
-<section class="detail-panel" aria-live="polite">
-  @if (selectedNode(); as node) {
-  <div class="detail-header">
-    <div>
-      <p class="eyebrow">Detalle de miembro</p>
-      <h2>{{ node.displayName }}</h2>
-      <p class="muted">ID: {{ node.id }}</p>
-    </div>
-    <button type="button" class="ghost" (click)="clearSelection()">Cerrar</button>
-  </div>
+<!-- Canvas Viewport Area -->
+<div class="canvas-container">
+  <app-graph-viewport [nodes]="members()" [edges]="relationships()" [selectedNodeId]="selectedNodeId()"
+    [showMinimap]="showMinimap()" (nodeSelect)="handleNodeSelect($event)"
+    (quickAddRelative)="handleQuickAddRelative($event)" (nodePositionChange)="handleNodePositionChange($event)"
+    (connectRelationship)="handleConnectRelationship($event)" />
 
-  <dl class="detail-grid">
-    <div>
-      <dt>Nacimiento</dt>
-      <dd>{{ node.birthDate || 'Sin especificar' }}</dd>
+  <!-- Inspector Drawer (Offcanvas) -->
+  @if (isDrawerOpen()) {
+  <aside class="inspector-drawer" role="dialog" aria-modal="true" aria-labelledby="drawerHeading">
+    <div class="drawer-header">
+      <div>
+        <span class="drawer-eyebrow">{{ isCreatingNew() ? 'Nuevo Registro' : 'Inspector de Miembro' }}</span>
+        <h2 id="drawerHeading">{{ isCreatingNew() ? 'Añadir Familiar' : (selectedNode()?.displayName || 'Detalles') }}
+        </h2>
+      </div>
+      <button type="button" class="close-btn" (click)="closeDrawer()" aria-label="Cerrar inspector">
+        ✕
+      </button>
     </div>
-    <div>
-      <dt>Lugar</dt>
-      <dd>{{ node.birthplace || 'Sin especificar' }}</dd>
-    </div>
-    <div>
-      <dt>Notas</dt>
-      <dd>{{ node.biography || 'Sin notas aún' }}</dd>
-    </div>
-    <div>
-      <dt>Etiquetas</dt>
-      <dd>
-        @if (node.tags?.length) {
-        @for (tag of node.tags; track tag) {
-        <span class="tag">{{ tag }}</span>
+
+    <div class="drawer-body">
+      <form (ngSubmit)="saveDrawerMember()" class="drawer-form">
+        <div class="form-group">
+          <label for="drawerName">Nombre completo *</label>
+          <input id="drawerName" type="text" name="displayName" [(ngModel)]="formDisplayName"
+            placeholder="Ej. Sofía Hernández" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="drawerRole">Parentesco / Rol</label>
+            <input id="drawerRole" type="text" name="role" [(ngModel)]="formRole"
+              placeholder="Ej. Matriarca, Hijo mayor" />
+          </div>
+          <div class="form-group">
+            <label for="drawerBirthplace">Lugar de origen</label>
+            <input id="drawerBirthplace" type="text" name="birthplace" [(ngModel)]="formBirthplace"
+              placeholder="Ej. Jalisco, MX" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="drawerBirth">Año o Fecha Nacimiento</label>
+            <input id="drawerBirth" type="text" name="birthDate" [(ngModel)]="formBirthDate"
+              placeholder="YYYY-MM-DD o YYYY" />
+          </div>
+          <div class="form-group">
+            <label for="drawerDeath">Año o Fecha Defunción</label>
+            <input id="drawerDeath" type="text" name="deathDate" [(ngModel)]="formDeathDate"
+              placeholder="Dejar vacío si vive" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="drawerBio">Historia / Biografía</label>
+          <textarea id="drawerBio" rows="3" name="biography" [(ngModel)]="formBiography"
+            placeholder="Notas memorables, anécdotas o profesión..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="drawerTags">Etiquetas (separadas por coma)</label>
+          <input id="drawerTags" type="text" name="tags" [(ngModel)]="formTags"
+            placeholder="generación-1, fundador, artesano" />
+        </div>
+
+        <!-- Section for Direct Relationships (when editing existing) -->
+        @if (!isCreatingNew() && selectedNode()) {
+        <hr class="drawer-divider" />
+        <div class="relationships-section">
+          <h3>Vínculos Familiares</h3>
+
+          @if (selectedNodeRelationships().length > 0) {
+          <ul class="relationship-list">
+            @for (rel of selectedNodeRelationships(); track rel.id) {
+            <li class="relationship-item">
+              <span>{{ rel.label }}</span>
+              <button type="button" class="delete-rel-btn" (click)="removeRelationship(rel.id)"
+                title="Eliminar este vínculo" aria-label="Eliminar vínculo">
+                ✕
+              </button>
+            </li>
+            }
+          </ul>
+          } @else {
+          <p class="empty-hint">Sin vínculos familiares directos aún.</p>
+          }
+
+          <!-- Add direct link to existing member -->
+          <div class="add-link-box">
+            <h4>Vincular con familiar existente:</h4>
+            <div class="link-inputs">
+              <select name="linkKind" [(ngModel)]="linkKind">
+                <option [value]="'parent'">Progenitor de</option>
+                <option [value]="'spouse'">Cónyuge / Pareja de</option>
+                <option [value]="'child'">Hijo/a de</option>
+                <option [value]="'sibling'">Hermano/a de</option>
+              </select>
+
+              <select name="linkTarget" [(ngModel)]="linkTargetId">
+                <option value="" disabled selected>Seleccionar pariente...</option>
+                @for (other of otherMembers(); track other.id) {
+                <option [value]="other.id">{{ other.displayName }} ({{ other.role || 'Miembro' }})</option>
+                }
+              </select>
+
+              <button type="button" class="secondary-btn small-btn" [disabled]="!linkTargetId()"
+                (click)="addDirectLink()">
+                Vincular
+              </button>
+            </div>
+          </div>
+        </div>
         }
-        } @else {
-        <span class="muted">Sin etiquetas</span>
-        }
-      </dd>
+
+        <div class="drawer-actions">
+          <button type="submit" class="primary-btn full-width">
+            {{ isCreatingNew() ? 'Guardar y Añadir al Árbol' : 'Guardar Cambios' }}
+          </button>
+          @if (!isCreatingNew()) {
+          <button type="button" class="danger-btn full-width" (click)="deleteCurrentMember()">
+            Eliminar Familiar del Árbol
+          </button>
+          }
+        </div>
+      </form>
     </div>
-  </dl>
-  } @else {
-  <div class="detail-empty">
-    <p>Selecciona un nodo para ver sus detalles.</p>
-    <span class="muted">Sugerencia: usa zoom para acercarte a nodos densos.</span>
-  </div>
+  </aside>
   }
-</section>
+</div>
 
 <section class="legend">
-  <h2>Leyenda rápida</h2>
+  <h2>Leyenda de relaciones</h2>
   <ul>
-    <li><span class="dot parent"></span>Padre / Madre</li>
-    <li><span class="dot child"></span>Hijo / Hija</li>
-    <li><span class="dot spouse"></span>Pareja</li>
-    <li><span class="dot sibling"></span>Hermano / Hermana</li>
-    <li><span class="dot grand"></span>Abuelos / Nietos</li>
+    <li><span class="dot parent"></span>Línea sólida terracota: Progenitor / Descendiente</li>
+    <li><span class="dot spouse"></span>Línea doble salvia: Unión matrimonial o conyugal</li>
+    <li><span class="dot handle-in"></span>Punto superior verde: Entrada ancestro</li>
+    <li><span class="dot handle-out"></span>Punto inferior terracota: Salida descendiente</li>
   </ul>
 </section>

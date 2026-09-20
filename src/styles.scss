@@ -1,17 +1,41 @@
 :root {
-  font-family: "Space Grotesk", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #0f172a;
-  background-color: #f6f7fb;
+  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  font-family: var(--font-sans);
+  color: #2c2623;
+  background-color: #fdfbf7;
   line-height: 1.6;
   font-weight: 400;
+
+  /* Heritage Modern Design Tokens */
+  --bg-canvas: #fdfbf7;
   --surface: #ffffff;
-  --surface-muted: #f0f4ff;
-  --border: #e2e8f0;
-  --text-muted: #475467;
-  --accent: #2563eb;
-  --accent-strong: #1d4ed8;
-  --accent-soft: #dbeafe;
-  --shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  --surface-muted: #f7f4ee;
+  --surface-glass: rgba(255, 255, 255, 0.85);
+  --border: #e8e2d8;
+  --border-subtle: #f2ede4;
+  --border-strong: #c8beaf;
+  --text: #2c2623;
+  --text-muted: #6e645e;
+  --text-light: #948981;
+
+  /* Brand Accents */
+  --accent: #c86d51;
+  --accent-terracotta: #c86d51;
+  --accent-terracotta-hover: #b3593e;
+  --accent-terracotta-soft: #faefe9;
+  --accent-sage: #4a6b5b;
+  --accent-sage-hover: #3d594b;
+  --accent-sage-soft: #edf4f0;
+  --accent-gold: #c29547;
+  --accent-gold-soft: #faf3e6;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(44, 38, 35, 0.05);
+  --shadow-md: 0 10px 30px rgba(44, 38, 35, 0.08);
+  --shadow-lg: 0 20px 50px rgba(44, 38, 35, 0.12);
+  --shadow: var(--shadow-md);
 }
 
 *,
@@ -23,8 +47,21 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at top, #edf2ff 0%, #f6f7fb 45%, #fefefe 100%);
-  color: #0f172a;
+  background: radial-gradient(circle at 15% 10%, #faf5ec 0%, #fdfbf7 50%, #f7f3ec 100%);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+.serif-heading {
+  font-family: var(--font-serif);
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 button {
@@ -33,4 +70,5 @@ button {
 
 a {
   color: inherit;
+  text-decoration: none;
 }

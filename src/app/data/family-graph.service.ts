@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, effect, signal } from '@angular/core';
 import { FamilyGraphSnapshot, PersonNode, RelationshipEdge, RelationshipKind } from '../models/family-graph.model';
 
 const demoNodes: PersonNode[] = [
@@ -7,28 +7,36 @@ const demoNodes: PersonNode[] = [
     displayName: 'Ana Martínez',
     birthDate: '1965-05-24',
     birthplace: 'Guadalajara, MX',
-    tags: ['generación-2', 'matriarca']
+    role: 'Matriarca',
+    tags: ['generación-2', 'matriarca'],
+    position: { x: 180, y: 80 }
   },
   {
     id: 'p-camilo',
     displayName: 'Camilo Ortega',
     birthDate: '1962-09-03',
     birthplace: 'Guadalajara, MX',
-    tags: ['generación-2']
+    role: 'Patriarca',
+    tags: ['generación-2'],
+    position: { x: 460, y: 80 }
   },
   {
     id: 'p-sol',
     displayName: 'Sol Hernández',
     birthDate: '1988-03-11',
     birthplace: 'CDMX, MX',
-    tags: ['generación-3']
+    role: 'Hija mayor',
+    tags: ['generación-3'],
+    position: { x: 180, y: 280 }
   },
   {
     id: 'p-valentina',
     displayName: 'Valentina Ortega',
     birthDate: '1992-07-18',
     birthplace: 'CDMX, MX',
-    tags: ['generación-3']
+    role: 'Hija menor',
+    tags: ['generación-3'],
+    position: { x: 460, y: 280 }
   }
 ];
 
@@ -59,13 +67,52 @@ const demoEdges: RelationshipEdge[] = [
   }
 ];
 
+const STORAGE_KEY = 'family_tree_graph_data_v1';
+
+function loadInitialState(): { nodes: PersonNode[]; edges: RelationshipEdge[]; updatedAt: number } {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return { nodes: demoNodes, edges: demoEdges, updatedAt: Date.now() };
+  }
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed?.nodes) && Array.isArray(parsed?.edges)) {
+        return {
+          nodes: parsed.nodes,
+          edges: parsed.edges,
+          updatedAt: parsed.updatedAt ?? Date.now()
+        };
+      }
+    }
+  } catch {
+    // Ignore parse error and fall back to demo
+  }
+  return { nodes: demoNodes, edges: demoEdges, updatedAt: Date.now() };
+}
+
 @Injectable({ providedIn: 'root' })
 export class FamilyGraphService {
-  private readonly nodesState = signal<PersonNode[]>(demoNodes);
-  private readonly edgesState = signal<RelationshipEdge[]>(demoEdges);
-  private readonly updatedAt = signal<number>(Date.now());
+  private readonly initial = loadInitialState();
+  private readonly nodesState = signal<PersonNode[]>(this.initial.nodes);
+  private readonly edgesState = signal<RelationshipEdge[]>(this.initial.edges);
+  private readonly updatedAt = signal<number>(this.initial.updatedAt);
   private readonly lastMember = signal<PersonNode | null>(null);
   private readonly lastRelationship = signal<RelationshipEdge | null>(null);
+
+  constructor() {
+    // Keep localStorage synchronized whenever state signals update
+    if (typeof window !== 'undefined' && window.localStorage) {
+      effect(() => {
+        const snapshot = this.snapshot();
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+        } catch (e) {
+          console.warn('Could not persist family tree snapshot to localStorage', e);
+        }
+      });
+    }
+  }
 
   readonly snapshot = computed<FamilyGraphSnapshot>(() => ({
     nodes: this.nodesState(),
@@ -137,6 +184,55 @@ export class FamilyGraphService {
   clearAll(): void {
     this.nodesState.set([]);
     this.edgesState.set([]);
+    this.touch();
+  }
+
+  deleteMember(nodeId: string): void {
+    this.nodesState.update((nodes) => nodes.filter((n) => n.id !== nodeId));
+    this.edgesState.update((edges) => edges.filter((e) => e.sourceId !== nodeId && e.targetId !== nodeId));
+    if (this.lastMember()?.id === nodeId) {
+      this.lastMember.set(null);
+    }
+    this.touch();
+  }
+
+  deleteRelationship(edgeId: string): void {
+    this.edgesState.update((edges) => edges.filter((e) => e.id !== edgeId));
+    if (this.lastRelationship()?.id === edgeId) {
+      this.lastRelationship.set(null);
+    }
+    this.touch();
+  }
+
+  updateMemberPosition(nodeId: string, position: { x: number; y: number }): void {
+    this.nodesState.update((nodes) =>
+      nodes.map((node) => (node.id === nodeId ? { ...node, position } : node))
+    );
+    this.touch();
+  }
+
+  exportJson(): string {
+    return JSON.stringify(this.snapshot(), null, 2);
+  }
+
+  importJson(jsonContent: string): boolean {
+    try {
+      const data = JSON.parse(jsonContent);
+      if (Array.isArray(data?.nodes) && Array.isArray(data?.edges)) {
+        this.nodesState.set(data.nodes);
+        this.edgesState.set(data.edges);
+        this.touch();
+        return true;
+      }
+    } catch (e) {
+      console.error('Failed to parse graph JSON', e);
+    }
+    return false;
+  }
+
+  resetToDemo(): void {
+    this.nodesState.set(demoNodes);
+    this.edgesState.set(demoEdges);
     this.touch();
   }
 

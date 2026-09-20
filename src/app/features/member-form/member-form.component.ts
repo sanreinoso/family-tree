@@ -1,20 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output
+} from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PersonNode } from '../../models/family-graph.model';
 
 const OPTIONAL_URL_PATTERN = /^$|https?:\/\/.+/i;
-
-type MemberFormValue = {
-  id: string;
-  displayName: string;
-  birthDate: string;
-  deathDate: string;
-  birthplace: string;
-  biography: string;
-  photoUrl: string;
-  tags: string;
-};
 
 @Component({
   selector: 'app-member-form',
@@ -24,28 +20,16 @@ type MemberFormValue = {
   styleUrl: './member-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MemberFormComponent implements OnChanges {
+export class MemberFormComponent {
   private readonly fb = inject(FormBuilder);
 
-  @Input() member?: PersonNode | null;
-  @Input() submitLabel = 'Guardar miembro';
-  @Input() existingIds: string[] = [];
-  @Output() memberSubmit = new EventEmitter<PersonNode>();
-
-  private readonly uniqueIdValidator: ValidatorFn = (control) => {
-    const value = (control.value ?? '').trim();
-    if (!value) {
-      return null;
-    }
-    const isCurrentMemberId = this.member?.id === value;
-    if (!isCurrentMemberId && this.existingIds.includes(value)) {
-      return { duplicateId: true };
-    }
-    return null;
-  };
+  readonly member = input<PersonNode | null>(null);
+  readonly submitLabel = input<string>('Guardar miembro');
+  readonly existingIds = input<string[]>([]);
+  readonly memberSubmit = output<PersonNode>();
 
   protected readonly form = this.fb.nonNullable.group({
-    id: ['', [Validators.required, Validators.minLength(3), this.uniqueIdValidator]],
+    id: [''],
     displayName: ['', [Validators.required, Validators.minLength(2)]],
     birthDate: [''],
     deathDate: [''],
@@ -56,16 +40,10 @@ export class MemberFormComponent implements OnChanges {
   });
 
   constructor() {
-    this.applyValue();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['member']) {
-      this.applyValue(changes['member'].currentValue);
-    }
-    if (changes['existingIds']) {
-      this.controls.id.updateValueAndValidity();
-    }
+    effect(() => {
+      const currentMember = this.member();
+      this.applyValue(currentMember);
+    });
   }
 
   protected get controls() {
@@ -79,8 +57,9 @@ export class MemberFormComponent implements OnChanges {
     }
 
     const raw = this.form.getRawValue();
+    const finalId = raw.id.trim() || this.member()?.id || `p-${Date.now().toString(36)}`;
     const node: PersonNode = {
-      id: raw.id.trim(),
+      id: finalId,
       displayName: raw.displayName.trim(),
       birthDate: this.cleanOptional(raw.birthDate),
       deathDate: this.cleanOptional(raw.deathDate),
@@ -102,7 +81,7 @@ export class MemberFormComponent implements OnChanges {
   }
 
   protected resetForm(): void {
-    this.applyValue();
+    this.applyValue(this.member());
   }
 
   private applyValue(node?: PersonNode | null): void {
@@ -117,14 +96,16 @@ export class MemberFormComponent implements OnChanges {
       value.biography = node.biography ?? '';
       value.photoUrl = node.photoUrl ?? '';
       value.tags = (node.tags ?? []).join(', ');
+    } else {
+      value.id = `p-${Date.now().toString(36)}`;
     }
 
-    this.form.setValue(value);
+    this.form.reset(value);
   }
 
-  private createEmptyValue(): MemberFormValue {
+  private createEmptyValue() {
     return {
-      id: this.generateNodeId(),
+      id: '',
       displayName: '',
       birthDate: '',
       deathDate: '',
@@ -135,17 +116,8 @@ export class MemberFormComponent implements OnChanges {
     };
   }
 
-  private generateNodeId(): string {
-    const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined;
-    if (cryptoApi?.randomUUID) {
-      return cryptoApi.randomUUID();
-    }
-
-    return `person-${Date.now()}`;
-  }
-
   private cleanOptional(value?: string | null): string | undefined {
-    const cleaned = value?.trim();
-    return cleaned ? cleaned : undefined;
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : undefined;
   }
 }

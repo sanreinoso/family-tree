@@ -22,7 +22,9 @@ export interface PersonNode {
   birthplace?: string;
   biography?: string;
   photoUrl?: string;
+  role?: string;
   tags?: string[];
+  position?: { x: number; y: number };
   metadata?: Record<string, string>;
 }
 

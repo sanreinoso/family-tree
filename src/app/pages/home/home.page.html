@@ -1,27 +1,232 @@
-<section class="hero">
-  <p class="eyebrow">Panel principal</p>
-  <h1>Construye tu árbol genealógico como un grafo vivo</h1>
-  <p class="lede">
-    Empieza registrando cada persona y luego define sus conexiones. Puedes iterar todo lo que necesites antes de
-    sincronizarlo con una base de datos.
-  </p>
-  <div class="cta-group">
-    <a routerLink="/members/new" class="cta primary">Capturar miembro</a>
-    <a routerLink="/relationships/new" class="cta ghost">Registrar relación</a>
+<!-- Hero Section with High Conversion & Editorial Typography -->
+<section class="hero-section">
+  <div class="hero-content">
+    <div class="badge-pill">
+      <span class="pulse-dot"></span>
+      <span>Heritage Modern Engine • v1.0</span>
+    </div>
+    <h1 class="hero-title">
+      Construye tu árbol genealógico como un lienzo vivo y reactivo
+    </h1>
+    <p class="hero-lede">
+      Visualiza generaciones enteras sin fricción manual. Diseñado con una refinada estética editorial para explorar,
+      conectar y transmitir las raíces de tu familia con nitidez asombrosa.
+    </p>
+
+    <div class="hero-cta-group">
+      <button type="button" class="cta-primary-large" (click)="openFirstSpark()">
+        Comienza tu legado en 60 segundos &rarr;
+      </button>
+      <a routerLink="/graph" class="cta-secondary-large">
+        Explorar Lienzo en Vivo
+      </a>
+    </div>
+
+    <!-- Social Proof Indicators (RF-1.1) -->
+    <div class="social-proof-grid">
+      <div class="proof-card">
+        <span class="proof-number">+15,000</span>
+        <span class="proof-label">Usuarios activos</span>
+      </div>
+      <div class="proof-card">
+        <span class="proof-number">+8,200</span>
+        <span class="proof-label">Árboles construidos</span>
+      </div>
+      <div class="proof-card">
+        <span class="proof-number">+25</span>
+        <span class="proof-label">Países con historias vivas</span>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="grid">
-  <article>
-    <h2>1. Captura miembros</h2>
-    <p>Registra los datos clave de cada nodo, incluyendo notas internas y etiquetas para búsquedas rápidas.</p>
+<!-- Micro-Playground Interactivo (RF-1.2 Sandbox) -->
+<section class="playground-section">
+  <div class="section-header">
+    <p class="eyebrow">Micro-Playground Interactivo</p>
+    <h2>Siente el flujo del grafo en tiempo real</h2>
+    <p class="subtext">
+      Prueba arrastrar los nodos de muestra a continuación. Observa cómo las líneas de linaje siguen cada movimiento sin
+      retrasos.
+    </p>
+  </div>
+
+  <div class="sandbox-arena" (mousemove)="onDrag($event)" (mouseup)="stopDrag()" (mouseleave)="stopDrag()"
+    (touchmove)="onDrag($event)" (touchend)="stopDrag()">
+    <!-- Background SVG Edges for Sandbox -->
+    <svg class="sandbox-svg" viewBox="0 0 600 360">
+      <defs>
+        <marker id="sandbox-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6"
+          orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#c86d51"></path>
+        </marker>
+      </defs>
+
+      <!-- Line 1: Abuelo -> Padre -->
+      <path [attr.d]="'M ' + (sandboxNodes()[0].x + 80) + ' ' + (sandboxNodes()[0].y + 55) +
+                  ' C ' + (sandboxNodes()[0].x + 80) + ' ' + (sandboxNodes()[1].y) + ', ' +
+                  (sandboxNodes()[1].x + 80) + ' ' + (sandboxNodes()[0].y + 60) + ', ' +
+                  (sandboxNodes()[1].x + 80) + ' ' + (sandboxNodes()[1].y)" fill="none" stroke="#c86d51"
+        stroke-width="2.5" marker-end="url(#sandbox-arrow)" />
+
+      <!-- Line 2: Padre -> Hijo -->
+      <path [attr.d]="'M ' + (sandboxNodes()[1].x + 80) + ' ' + (sandboxNodes()[1].y + 55) +
+                  ' C ' + (sandboxNodes()[1].x + 80) + ' ' + (sandboxNodes()[2].y) + ', ' +
+                  (sandboxNodes()[2].x + 80) + ' ' + (sandboxNodes()[1].y + 60) + ', ' +
+                  (sandboxNodes()[2].x + 80) + ' ' + (sandboxNodes()[2].y)" fill="none" stroke="#4a6b5b"
+        stroke-width="2.5" marker-end="url(#sandbox-arrow)" />
+    </svg>
+
+    <!-- Draggable Sandbox Cards -->
+    @for (node of sandboxNodes(); track node.id) {
+    <div class="sandbox-card" [class.dragging]="draggingNodeId() === node.id" [style.left.px]="node.x"
+      [style.top.px]="node.y" (mousedown)="startDrag(node.id, $event)" (touchstart)="startDrag(node.id, $event)">
+      <div class="sandbox-card-header">
+        <span class="gen-tag">{{ node.generation }}</span>
+        <span class="role-tag">{{ node.role }}</span>
+      </div>
+      <p class="sandbox-card-name">{{ node.name }}</p>
+      <small class="drag-hint">Arrastra para mover</small>
+    </div>
+    }
+  </div>
+
+  <div class="playground-footnote">
+    <span>💡 Sin registro requerido. Experimenta el motor reactivo directamente en tu navegador.</span>
+  </div>
+</section>
+
+<!-- Features Grid -->
+<section class="features-section">
+  <article class="feature-card">
+    <div class="feature-icon">🌳</div>
+    <h3>Lienzo Inteligente con ngx-vflow</h3>
+    <p>Navegación espacial ultra-fluida con pan, zoom, fit view y minimapa diseñado con Angular Signals.</p>
   </article>
-  <article>
-    <h2>2. Conecta relaciones</h2>
-    <p>Define parentescos dirigidos (padres, hijos, hermanos, parejas) y agrega contexto textual.</p>
+
+  <article class="feature-card">
+    <div class="feature-icon">🔗</div>
+    <h3>Conexiones Semánticas</h3>
+    <p>Handles interactivos dedicados para progenitores (arriba), descendientes (abajo) y uniones matrimoniales
+      (laterales).</p>
   </article>
-  <article>
-    <h2>3. Visualiza el grafo</h2>
-    <p>Pronto podrás renderizar el grafo completo y navegar por generaciones con filtros inteligentes.</p>
+
+  <article class="feature-card">
+    <div class="feature-icon">💾</div>
+    <h3>Portabilidad y Respaldo</h3>
+    <p>Exporta tu árbol completo en PNG de alta resolución o guarda un respaldo JSON seguro en tu equipo.</p>
   </article>
 </section>
+
+<!-- Onboarding Modal "First-Spark" (RF-1.3) -->
+@if (isSparkOpen()) {
+<div class="spark-overlay" role="dialog" aria-modal="true" aria-labelledby="sparkHeading">
+  <div class="spark-modal">
+    <div class="spark-modal-header">
+      <div>
+        <span class="eyebrow">Asistente First-Spark</span>
+        <h2 id="sparkHeading">Inicia tu árbol en 3 pasos</h2>
+      </div>
+      <button type="button" class="spark-close" (click)="closeFirstSpark()" aria-label="Cerrar asistente">✕</button>
+    </div>
+
+    <!-- Steps Indicator -->
+    <div class="spark-stepper">
+      <div class="step-pill" [class.active]="sparkStep() === 1" [class.done]="sparkStep() > 1">
+        <span>1</span> Tú
+      </div>
+      <div class="step-line"></div>
+      <div class="step-pill" [class.active]="sparkStep() === 2" [class.done]="sparkStep() > 2">
+        <span>2</span> Tus Raíces
+      </div>
+      <div class="step-line"></div>
+      <div class="step-pill" [class.active]="sparkStep() === 3">
+        <span>3</span> Tu Lienzo
+      </div>
+    </div>
+
+    <div class="spark-modal-body">
+      @if (sparkStep() === 1) {
+      <div class="step-content">
+        <h3>Paso 1: ¿Quién eres tú?</h3>
+        <p class="step-desc">Este será el nodo raíz desde donde florecerá todo tu árbol genealógico.</p>
+
+        <div class="spark-form">
+          <div class="form-group">
+            <label for="userName">Tu nombre completo *</label>
+            <input id="userName" type="text" [(ngModel)]="sparkUser.name" placeholder="Ej. Valentina Morales"
+              autofocus />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="userYear">Año de nacimiento</label>
+              <input id="userYear" type="text" [(ngModel)]="sparkUser.birthYear" placeholder="Ej. 1995" />
+            </div>
+            <div class="form-group">
+              <label for="userPlace">Lugar de origen</label>
+              <input id="userPlace" type="text" [(ngModel)]="sparkUser.birthplace" placeholder="Ej. Bogotá, CO" />
+            </div>
+          </div>
+        </div>
+
+        <div class="spark-footer">
+          <button type="button" class="cta-primary-large" [disabled]="!sparkUser.name.trim()" (click)="nextSparkStep()">
+            Continuar a tus raíces &rarr;
+          </button>
+        </div>
+      </div>
+      }
+
+      @if (sparkStep() === 2) {
+      <div class="step-content">
+        <h3>Paso 2: Tus Raíces Directas</h3>
+        <p class="step-desc">Añade a tus padres para comenzar a trazar las generaciones anteriores.</p>
+
+        <div class="spark-form">
+          <div class="form-group">
+            <label for="fatherName">Nombre de tu Padre</label>
+            <input id="fatherName" type="text" [(ngModel)]="sparkParents.fatherName"
+              placeholder="Ej. Roberto Morales" />
+          </div>
+
+          <div class="form-group">
+            <label for="motherName">Nombre de tu Madre</label>
+            <input id="motherName" type="text" [(ngModel)]="sparkParents.motherName"
+              placeholder="Ej. Carmen Del Valle" />
+          </div>
+
+          <div class="form-group">
+            <label for="parentsPlace">Lugar de origen familiar (opcional)</label>
+            <input id="parentsPlace" type="text" [(ngModel)]="sparkParents.parentsOrigin"
+              placeholder="Ej. Guadalajara, MX" />
+          </div>
+        </div>
+
+        <div class="spark-footer">
+          <button type="button" class="cta-secondary-large" (click)="prevSparkStep()">
+            &larr; Volver
+          </button>
+          <button type="button" class="cta-primary-large" (click)="nextSparkStep()">
+            Crear Árbol y Abrir Lienzo &rarr;
+          </button>
+        </div>
+      </div>
+      }
+
+      @if (sparkStep() === 3) {
+      <div class="step-content step-sparking">
+        <div class="spark-loader-icon">✨</div>
+        <h3>¡Creando la magia de tu linaje!</h3>
+        <p class="step-desc">
+          Conectando a <strong>{{ sparkUser.name }}</strong> con sus raíces familiares...
+        </p>
+        <div class="spark-progress-bar">
+          <div class="spark-progress-fill"></div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+}

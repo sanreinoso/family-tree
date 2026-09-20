@@ -1,13 +1,25 @@
 import { Routes } from '@angular/router';
-import { HomePageComponent } from './pages/home/home.page';
-import { MemberCapturePageComponent } from './pages/member-capture/member-capture.page';
-import { RelationshipCapturePageComponent } from './pages/relationship-capture/relationship-capture.page';
-import { GraphPageComponent } from './pages/graph/graph.page';
 
 export const routes: Routes = [
-  { path: '', component: HomePageComponent },
-  { path: 'members/new', component: MemberCapturePageComponent },
-  { path: 'relationships/new', component: RelationshipCapturePageComponent },
-  { path: 'graph', component: GraphPageComponent },
+  {
+    path: '',
+    loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePageComponent)
+  },
+  {
+    path: 'members/new',
+    loadComponent: () =>
+      import('./pages/member-capture/member-capture.page').then((m) => m.MemberCapturePageComponent)
+  },
+  {
+    path: 'relationships/new',
+    loadComponent: () =>
+      import('./pages/relationship-capture/relationship-capture.page').then(
+        (m) => m.RelationshipCapturePageComponent
+      )
+  },
+  {
+    path: 'graph',
+    loadComponent: () => import('./pages/graph/graph.page').then((m) => m.GraphPageComponent)
+  },
   { path: '**', redirectTo: '' }
 ];

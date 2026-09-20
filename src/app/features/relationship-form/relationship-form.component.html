@@ -8,7 +8,7 @@
           [attr.aria-invalid]="(controls.sourceId.touched && controls.sourceId.invalid) ? true : null"
           [attr.aria-describedby]="(controls.sourceId.touched && controls.sourceId.invalid) ? 'sourceId-error' : null">
           <option value="" disabled>Elige un miembro</option>
-          @for (node of nodes; track node.id) {
+          @for (node of nodes(); track node.id) {
           <option [value]="node.id">{{ node.displayName }}</option>
           }
         </select>
@@ -24,7 +24,7 @@
           [attr.aria-invalid]="(controls.targetId.touched && controls.targetId.invalid) ? true : null"
           [attr.aria-describedby]="(controls.targetId.touched && controls.targetId.invalid) ? 'targetId-error' : null">
           <option value="" disabled>Elige un miembro</option>
-          @for (node of nodes; track node.id) {
+          @for (node of nodes(); track node.id) {
           <option [value]="node.id">{{ node.displayName }}</option>
           }
         </select>
@@ -62,6 +62,6 @@
 
   <div class="actions">
     <button type="button" class="ghost" (click)="resetForm()">Limpiar</button>
-    <button type="submit" class="primary">{{ submitLabel }}</button>
+    <button type="submit" class="primary">{{ submitLabel() }}</button>
   </div>
 </form>
